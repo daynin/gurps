@@ -319,7 +319,7 @@ class GurpsActorV2<SubType extends Actor.SubType> extends Actor<SubType> impleme
   /* ---------------------------------------- */
 
   get currentMoveMode() {
-    return this.isNewActorType ? this.modelV2.currentMoveMode : this._getCurrentMoveMode
+    return this.isNewActorType ? this.modelV2.currentMoveMode : this._getCurrentMoveMode()
   }
 
   /**

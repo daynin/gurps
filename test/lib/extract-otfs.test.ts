@@ -1,5 +1,6 @@
-import { gurpslink2 } from '../module/utilities/gurpslink.js'
-import { DamageTable } from '../module/damage/damage-tables.js'
+import { extractOtfs, rollableTypes } from '../../lib/extract-otfs.ts'
+import { atou } from '../../lib/utilities.js'
+import { DamageTable } from '../../module/damage/damage-tables.js'
 
 beforeAll(() => {
   globalThis.GURPS = {} as any
@@ -13,66 +14,15 @@ beforeAll(() => {
   GURPS.DamageTables = new DamageTable()
 })
 
-const rollableTypes = [
-  'attribute',
-  'skill-spell',
-  'attack',
-  'attackdamage',
-  'weapon-parry',
-  'weapon-block',
-  'controlroll',
-  'roll',
-  'damage',
-  'derivedroll',
-  'deriveddamage',
-  'chat',
-]
-
-function extractOtfs(text: string) {
-  if (!text) return []
-  const actions = gurpslink2(text, true) as any[]
-
-  return actions
-    .filter(action => action.action && rollableTypes.includes(action.action.type))
-    .map(action => {
-      let actionData = action.action
-      const dataActionMatch = action.text.match(/data-action='([^']+)'/)
-      if (dataActionMatch) {
-        actionData = JSON.parse(atob(dataActionMatch[1]))
-      }
-
-      let displayText = ''
-
-      if (actionData.overridetxt) {
-        displayText = actionData.overridetxt
-      } else if (
-        actionData.type === 'skill-spell' ||
-        actionData.type === 'attack' ||
-        actionData.type === 'attackdamage' ||
-        actionData.type === 'weapon-parry' ||
-        actionData.type === 'weapon-block'
-      ) {
-        displayText = actionData.name || ''
-      } else if (actionData.type === 'attribute') {
-        displayText = actionData.attribute || ''
-      } else if (actionData.type === 'controlroll') {
-        displayText = actionData.desc || ''
-      } else if (actionData.type === 'chat') {
-        displayText = 'Action'
-      }
-
-      let fullFormula = actionData.orig
-      if (actionData.overridetxt) {
-        fullFormula = `"${actionData.overridetxt}" ${actionData.orig}`
-      }
-
-      return {
-        formula: fullFormula,
-        text: displayText,
-        encodedAction: btoa(JSON.stringify(actionData)),
-      }
-    })
-}
+describe('rollableTypes', () => {
+  test('contains expected types', () => {
+    expect(rollableTypes).toContain('attribute')
+    expect(rollableTypes).toContain('skill-spell')
+    expect(rollableTypes).toContain('attack')
+    expect(rollableTypes).toContain('damage')
+    expect(rollableTypes).toContain('chat')
+  })
+})
 
 describe('extractOtfs', () => {
   describe('skill-spell type', () => {
@@ -197,7 +147,7 @@ describe('extractOtfs', () => {
       expect(result).toHaveLength(1)
       expect(result[0].text).toBe('Attack')
       expect(result[0].encodedAction).toBeDefined()
-      const decodedAction = JSON.parse(atob(result[0].encodedAction))
+      const decodedAction = JSON.parse(atou(result[0].encodedAction))
       expect(decodedAction.type).toBe('chat')
       expect(decodedAction.overridetxt).toBe('Attack')
     })

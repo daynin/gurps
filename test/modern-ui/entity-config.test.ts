@@ -1,58 +1,11 @@
-interface EntityConfiguration {
-  entityName: string
-  path: string
-  editMethod: string
-  localeKey: string
-  createArgs?: () => string[]
+// @ts-ignore
+globalThis.game = {
+  i18n: {
+    localize: (key: string) => key,
+  },
 }
 
-interface ModifierConfiguration {
-  isReaction: boolean
-}
-
-const mockLocalize = (key: string) => key
-
-const entityConfigurations: EntityConfiguration[] = [
-  {
-    entityName: 'skill',
-    path: 'system.skills',
-    editMethod: 'editSkills',
-    localeKey: 'GURPS.skill',
-    createArgs: () => [mockLocalize('GURPS.skill'), '10']
-  },
-  {
-    entityName: 'trait',
-    path: 'system.ads',
-    editMethod: 'editAds',
-    localeKey: 'GURPS.advantage'
-  },
-  {
-    entityName: 'spell',
-    path: 'system.spells',
-    editMethod: 'editSpells',
-    localeKey: 'GURPS.spell',
-    createArgs: () => [mockLocalize('GURPS.spell'), '10']
-  },
-  {
-    entityName: 'melee',
-    path: 'system.melee',
-    editMethod: 'editMelee',
-    localeKey: 'GURPS.melee',
-    createArgs: () => [mockLocalize('GURPS.melee'), '10', '1d']
-  },
-  {
-    entityName: 'ranged',
-    path: 'system.ranged',
-    editMethod: 'editRanged',
-    localeKey: 'GURPS.ranged',
-    createArgs: () => [mockLocalize('GURPS.ranged'), '10', '1d']
-  }
-]
-
-const modifierConfigurations: ModifierConfiguration[] = [
-  { isReaction: true },
-  { isReaction: false }
-]
+import { entityConfigurations, modifierConfigurations } from '../../module/actor/modern/entity-config.ts'
 
 describe('entityConfigurations', () => {
   test('contains 5 entity types', () => {
@@ -60,7 +13,7 @@ describe('entityConfigurations', () => {
   })
 
   test('all configs have required properties', () => {
-    const requiredProps = ['entityName', 'path', 'editMethod', 'localeKey']
+    const requiredProps = ['entityName', 'path', 'editMethod', 'localeKey', 'EntityClass']
 
     entityConfigurations.forEach(config => {
       requiredProps.forEach(prop => {
@@ -76,7 +29,7 @@ describe('entityConfigurations', () => {
     ['melee', 'system.melee', 'editMelee', 'GURPS.melee'],
     ['ranged', 'system.ranged', 'editRanged', 'GURPS.ranged'],
   ])('config for %s has correct path and edit method', (entityName, expectedPath, expectedMethod, expectedLocale) => {
-    const config = entityConfigurations.find(c => c.entityName === entityName)
+    const config = entityConfigurations.find(configItem => configItem.entityName === entityName)
 
     expect(config).toBeDefined()
     expect(config!.path).toBe(expectedPath)
@@ -92,7 +45,7 @@ describe('entityConfigurations', () => {
 
   describe('createArgs', () => {
     test('skill createArgs returns name and level', () => {
-      const config = entityConfigurations.find(c => c.entityName === 'skill')
+      const config = entityConfigurations.find(configItem => configItem.entityName === 'skill')
       const args = config!.createArgs!()
 
       expect(args).toHaveLength(2)
@@ -101,7 +54,7 @@ describe('entityConfigurations', () => {
     })
 
     test('spell createArgs returns name and level', () => {
-      const config = entityConfigurations.find(c => c.entityName === 'spell')
+      const config = entityConfigurations.find(configItem => configItem.entityName === 'spell')
       const args = config!.createArgs!()
 
       expect(args).toHaveLength(2)
@@ -110,7 +63,7 @@ describe('entityConfigurations', () => {
     })
 
     test('melee createArgs returns name, level, and damage', () => {
-      const config = entityConfigurations.find(c => c.entityName === 'melee')
+      const config = entityConfigurations.find(configItem => configItem.entityName === 'melee')
       const args = config!.createArgs!()
 
       expect(args).toHaveLength(3)
@@ -120,7 +73,7 @@ describe('entityConfigurations', () => {
     })
 
     test('ranged createArgs returns name, level, and damage', () => {
-      const config = entityConfigurations.find(c => c.entityName === 'ranged')
+      const config = entityConfigurations.find(configItem => configItem.entityName === 'ranged')
       const args = config!.createArgs!()
 
       expect(args).toHaveLength(3)
@@ -130,7 +83,7 @@ describe('entityConfigurations', () => {
     })
 
     test('trait has no createArgs', () => {
-      const config = entityConfigurations.find(c => c.entityName === 'trait')
+      const config = entityConfigurations.find(configItem => configItem.entityName === 'trait')
       expect(config!.createArgs).toBeUndefined()
     })
   })
